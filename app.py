@@ -23,14 +23,14 @@ def receive_sensor_data():
 
         # Logistic-style trained formula
         score = (
-    0.08 * speed +          # doubled weight
-    1.5 * acceleration +
-    2.5 * brake_force +
-    3.5 * weather
+    0.12 * speed +        # strong speed impact
+    2.0 * acceleration +
+    3.0 * brake_force +
+    4.0 * weather
 )
 
+probability = 1 / (1 + np.exp(-(score - 10) * 0.5))
 
-        probability = 1 / (1 + np.exp(-(score - 15) * 0.25))
 
 
         if probability > 0.7:
@@ -51,4 +51,5 @@ def receive_sensor_data():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
