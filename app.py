@@ -23,13 +23,15 @@ def receive_sensor_data():
 
         # Logistic-style trained formula
         score = (
-            0.04 * speed +
-            1.2 * acceleration +
-            2.0 * brake_force +
-            3.0 * weather
-        )
+    0.08 * speed +          # doubled weight
+    1.5 * acceleration +
+    2.5 * brake_force +
+    3.5 * weather
+)
 
-        probability = 1 / (1 + np.exp(-(score - 20) * 0.1))
+
+        probability = 1 / (1 + np.exp(-(score - 15) * 0.25))
+
 
         if probability > 0.7:
             risk_level = "HIGH"
@@ -49,3 +51,4 @@ def receive_sensor_data():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
