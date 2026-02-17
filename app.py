@@ -6,10 +6,9 @@ import pickle
 app = Flask(__name__)
 CORS(app)
 
-
-# Load model and scaler
-model = pickle.load(open("model.pkl", "rb"))
-scaler = pickle.load(open("scaler.pkl", "rb"))
+# Global variables
+model = None
+scaler = None
 
 @app.route("/")
 def home():
@@ -19,7 +18,14 @@ def home():
 
 @app.route("/send_sensor_data", methods=["POST"])
 def receive_sensor_data():
+    global model, scaler
+
     try:
+        # Load model only when first request comes
+        if model is None or scaler is None:
+            model = pickle.load(open("model.pkl", "rb"))
+            scaler = pickle.load(open("scaler.pkl", "rb"))
+
         data = request.json
 
         speed = data["speed"]
@@ -33,9 +39,12 @@ def receive_sensor_data():
         prediction = model.predict(scaled_features)[0]
         probability = model.predict_proba(scaled_features)[0][1]
 
-        if prediction == 1:
+        if probability > 0.7:
             risk_level = "HIGH"
             alert_message = "⚠️ High Accident Risk! Slow Down!"
+        elif probability > 0.4:
+            risk_level = "MEDIUM"
+            alert_message = "⚠️ Moderate Risk! Drive Carefully!"
         else:
             risk_level = "LOW"
             alert_message = "Safe Driving Conditions"
@@ -47,6 +56,4 @@ def receive_sensor_data():
         })
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
-
+        return jsonify({"error": str(e)}), 500
